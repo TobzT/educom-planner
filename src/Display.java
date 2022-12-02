@@ -1,8 +1,12 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.lang.reflect.Array;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
+import models.Coordinate;
+import models.Person;
+import models.Student;
+import models.Teacher;
 
 public class Display {
 
@@ -11,6 +15,14 @@ public class Display {
     public JFrame frame;
     public JPanel mainPanel;
     public JPanel leftPanel;
+    public JPanel leftTopPanel;
+    public JPanel leftBottomPanel;
+    public JPanel hour1;
+    public JPanel hour2;
+    public JPanel hour3;
+    public JPanel hour4;
+    public JPanel hour5;
+    public JPanel hour6;
     public JPanel rightPanel;
     public JComboBox menu;
     public JButton studentButton;
@@ -19,9 +31,10 @@ public class Display {
     public JLabel leftPanelText;
     public boolean showTeachers = false;
 
-    public String[] students = {"Student 1", "Student 2", "Student 3", "Student 4", "Student 5", "Student 6", "Student 7", "Student 8", "Student 9", "Student 10"};
-    public String[] teachers = {"Teacher 1", "Teacher 2", "Teacher 3"};
-    public String sampleText = students[0];
+    public Student[] students = {new Student("Student 1"), new Student("Student 2"), new Student("Student 3"), new Student("Student 4"), new Student("Student 5"), new Student("Student 6"), new Student("Student 7"), new Student("Student 8"), new Student("Student 9"), new Student("Student 10")};
+    public Teacher[] teachers = {new Teacher("Teacher 1"), new Teacher("Teacher 2"), new Teacher("Teacher 3")};
+    public String sampleText = students[0].getName();
+    public GridBagConstraints c;
 
     public Display() {
         setScreenSizeVars();
@@ -32,16 +45,35 @@ public class Display {
         frame.repaint();
 
         mainPanel = createMainPanel();
-        GridBagConstraints c;
 
         leftPanel = createSidePanel();
 
         // Add stuff to leftPanel here:
 
-        leftPanelText = new JLabel(sampleText);
-        leftPanelText.setFont(new Font("Times New Roman", Font.PLAIN, 40));
-        leftPanelText.setHorizontalAlignment(JLabel.CENTER);
-        leftPanel.add(leftPanelText);
+            leftTopPanel = createSidePanel();
+
+            // Add stuff to leftTopPanel here
+            leftPanelText = new JLabel(sampleText);
+            leftPanelText.setFont(new Font("Ariel", Font.PLAIN, 40));
+            leftPanelText.setHorizontalAlignment(JLabel.CENTER);
+            leftTopPanel.add(leftPanelText);
+
+            // Customize and add leftTopPanel to leftPanel
+            c = customizeLeftTopPanel();
+            leftPanel.add(leftTopPanel, c);
+
+
+            leftBottomPanel = createSidePanel();
+
+            // Add stuff to leftBottomPanel
+                createPlanner(); // also adds the planner to the left bottom panel
+
+            // Customize and add leftBottomPanel to leftPanel
+            c = customizeLeftBottomPanel();
+            leftPanel.add(leftBottomPanel, c);
+
+
+
 
         // Customize and add leftPanel to mainPanel
         c = customizeLeftPanel();
@@ -50,22 +82,27 @@ public class Display {
         rightPanel = createSidePanel();
 
         // Add stuff to rightPanel here:
-        createMenu(); // also adds the menu to the right panel
+            createMenu(); // also adds the menu to the right panel
 
-        applyButton = createButton("Test", 100, 70);
-        applyButton.addActionListener(e -> leftPanelText.setText(menu.getSelectedItem().toString()));
-        c = customizeApplyButton();
-        rightPanel.add(applyButton, c);
+            applyButton = createButton("Apply", 150, 70);
+            applyButton.addActionListener(e -> {
+                Person person = (Person) menu.getSelectedItem();
+                leftPanelText.setText(person.getName());
+            });
+            c = customizeApplyButton();
+            rightPanel.add(applyButton, c);
 
-        studentButton = createButton("Students", 100, 70);
-        studentButton.addActionListener(e -> {showTeachers = false; sampleText = menu.getSelectedItem().toString(); show();});
-        c = customizeStudentButton();
-        rightPanel.add(studentButton, c);
+            studentButton = createButton("Students", 100, 70);
+            studentButton.setBackground(Color.BLUE);
+            studentButton.addActionListener(e -> {showTeachers = false; Person person = (Person)menu.getSelectedItem(); sampleText = person.getName(); show();});
+            c = customizeStudentButton();
+            rightPanel.add(studentButton, c);
 
-        teacherButton = createButton("Teachers", 100, 70);
-        teacherButton.addActionListener(e -> {showTeachers = true; sampleText = menu.getSelectedItem().toString(); show();});
-        c = customizeTeacherButton();
-        rightPanel.add(teacherButton, c);
+            teacherButton = createButton("Teachers", 100, 70);
+            teacherButton.setBackground(Color.ORANGE);
+            teacherButton.addActionListener(e -> {showTeachers = true; Person person = (Person)menu.getSelectedItem(); sampleText = person.getName(); show();});
+            c = customizeTeacherButton();
+            rightPanel.add(teacherButton, c);
 
 
 
@@ -84,10 +121,181 @@ public class Display {
 
         return button;
     }
-    private JComboBox createComboBox(String[] arr) {
+    private JComboBox createComboBox(Person[] arr) {
         JComboBox box = new JComboBox(arr);
         box.setSelectedIndex(0);
         return box;
+    }
+
+    private MouseAdapter getHourMouseListener() {
+        return new MouseAdapter() {
+            private Color background;
+//            private Color getBackground() {
+//                return background;
+//            }
+            private void setBackground(Color color) {
+                background = color;
+            }
+            @Override
+            public void mousePressed(MouseEvent e) {
+
+                System.out.println("Mouse Pressed");
+                JPanel panel = (JPanel) e.getSource();
+                setBackground(panel.getBackground());
+                panel.setBackground(Color.black);
+                panel.repaint();
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                JPanel panel = (JPanel) e.getSource();
+                panel.setBackground(background);
+                panel.repaint();
+                System.out.println("Mouse Released");
+
+            }
+        };
+    }
+    private void createPlanner() {
+        hour1 = createSidePanel();
+        hour2 = createSidePanel();
+        hour3 = createSidePanel();
+        hour4 = createSidePanel();
+        hour5 = createSidePanel();
+        hour6 = createSidePanel();
+        JPanel[] panels = {hour1, hour2, hour3, hour4, hour5, hour6};
+        Coordinate[] coords = {
+                new Coordinate(0, 0),
+                new Coordinate(1, 0),
+                new Coordinate(0, 1),
+                new Coordinate(1, 1),
+                new Coordinate(0, 2),
+                new Coordinate(1, 2)
+        };
+
+        Coordinate[] subCoords = {
+                new Coordinate(0, 0),
+                new Coordinate(0, 1),
+                new Coordinate(0, 2)
+        };
+
+        MouseAdapter mouseAdapter = getHourMouseListener();
+        for(int i = 0; i < panels.length; i++ ) {
+            JPanel panel = panels[i];
+
+            JPanel teacherPanel = createSidePanel();
+
+            JLabel label = new JLabel("test");
+            c = customizeTeacherLabel();
+            teacherPanel.add(label, c);
+            teacherPanel.setBackground(Color.RED);
+            teacherPanel.addMouseListener(mouseAdapter);
+            c = customizeTeacherPanel();
+            panel.add(teacherPanel, c);
+
+            JPanel studentPanel = createSidePanel();
+
+
+
+            for(int j = 0; j < 3; j++) {
+                JPanel panel1 = createSidePanel();
+                JLabel label1 = new JLabel("test");
+                c = customizeTeacherLabel();
+                panel1.add(label1, c);
+                panel1.setBackground(Color.GREEN);
+                panel1.addMouseListener(mouseAdapter);
+                Coordinate coordinate = subCoords[j];
+                c = customizeSubStudentPanel(coordinate.getX(), coordinate.getY());
+                studentPanel.add(panel1, c);
+
+            }
+            c = customizeStudentPanel();
+            panel.add(studentPanel, c);
+
+            Coordinate coord = coords[i];
+
+            c = customizeHour(coord.getX(), coord.getY());
+            leftBottomPanel.add(panel, c);
+        }
+    }
+
+    private GridBagConstraints customizeTeacherLabel() {
+        GridBagConstraints c = new GridBagConstraints();
+        c.fill = GridBagConstraints.HORIZONTAL;
+
+        return c;
+    }
+
+    private GridBagConstraints customizeTeacherPanel() {
+        GridBagConstraints c = new GridBagConstraints();
+        c.fill = GridBagConstraints.BOTH;
+        c.weightx = 0.5;
+        c.weighty = 1;
+        c.gridx = 0;
+        c.gridy = 0;
+        c.gridwidth = 1;
+        c.gridheight = 3;
+        return c;
+    }
+
+    private GridBagConstraints customizeStudentPanel() {
+        GridBagConstraints c = new GridBagConstraints();
+        c.fill = GridBagConstraints.BOTH;
+        c.weightx = 0.5;
+        c.weighty = 1;
+        c.gridx = 2;
+        c.gridy = 0;
+        c.gridwidth = 1;
+        c.gridheight = 3;
+        return c;
+    }
+
+    private GridBagConstraints customizeSubStudentPanel(int x, int y) {
+        GridBagConstraints c = new GridBagConstraints();
+        c.fill = GridBagConstraints.BOTH;
+        c.weightx = 1;
+        c.weighty = 0.3333;
+        c.gridx = x;
+        c.gridy = y;
+        c.gridwidth = 3;
+        c.gridheight = 1;
+        return c;
+    }
+
+    private GridBagConstraints customizeLeftTopPanel(){
+        GridBagConstraints c = new GridBagConstraints();
+        c.fill = GridBagConstraints.BOTH;
+        c.weightx = 1;
+        c.weighty = 0.15;
+        c.gridx = 0;
+        c.gridy = 0;
+        c.gridwidth = 3;
+        c.gridheight = 1;
+        return c;
+    }
+
+    private GridBagConstraints customizeLeftBottomPanel(){
+        GridBagConstraints c = new GridBagConstraints();
+        c.fill = GridBagConstraints.BOTH;
+        c.weightx = 1;
+        c.weighty = 0.85;
+        c.gridx = 0;
+        c.gridy = 1;
+        c.gridwidth = 3;
+        c.gridheight = 2;
+        return c;
+    }
+
+    private GridBagConstraints customizeHour(int gridx, int gridy) {
+        GridBagConstraints c = new GridBagConstraints();
+        c.fill = GridBagConstraints.BOTH;
+        c.weightx = 0.5;
+        c.weighty = 0.333333;
+        c.gridx = gridx;
+        c.gridy = gridy;
+        c.gridwidth = 1;
+        c.gridheight = 1;
+        return c;
     }
     private GridBagConstraints customizeStudentButton() {
         GridBagConstraints c = new GridBagConstraints();
@@ -205,6 +413,6 @@ public class Display {
         Toolkit tk = Toolkit.getDefaultToolkit();
         Dimension screenSize = tk.getScreenSize();
         screenWidth = screenSize.width;
-        screenHeight = screenSize.height;
+        screenHeight = screenSize.height - 40;
     }
 }

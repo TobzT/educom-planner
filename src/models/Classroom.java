@@ -1,4 +1,4 @@
-package dataTypes;
+package models;
 
 public class Classroom {
 
