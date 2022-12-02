@@ -1,12 +1,17 @@
-package dataTypes;
+package models;
 
-public class Student {
+public class Person {
 
-    public String name;
-    public String subject1;
-    public String subject2;
+    protected String name;
+    protected String subject1;
+    protected String subject2;
 
+    protected boolean isTeacher;
 
+    public Person(String name) {
+        this.name = name;
+
+    }
     public String getName() {
         return name;
     }
@@ -30,4 +35,13 @@ public class Student {
     public void setSubject2(String subject2) {
         this.subject2 = subject2;
     }
+
+    public boolean isTeacher() {
+        return isTeacher;
+    }
+
+    public String toString() {
+        return name;
+    }
+
 }
