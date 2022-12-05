@@ -1,5 +1,7 @@
 package models;
 
+import javax.swing.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Lesson {
@@ -9,6 +11,16 @@ public class Lesson {
     private Classroom classroom = null;
 
     private List<Student> students = null;
+
+    private List<String> labeltexts = new ArrayList<String>();
+
+    private TPanel teacherPanel = null;
+    private TPanel[] studentPanels = null;
+
+    public Lesson(TPanel teacherPanel, TPanel[] studentPanels) {
+        this.teacherPanel = teacherPanel;
+        this.studentPanels = studentPanels;
+    }
 
     public Teacher getTeacher() {
         return teacher;
@@ -32,6 +44,22 @@ public class Lesson {
 
     public void setStudents(List<Student> students) {
         this.students = students;
+    }
+
+    public JPanel getTeacherPanel() {
+        return teacherPanel;
+    }
+
+    public void setTeacherPanel(TPanel teacherPanel) {
+        this.teacherPanel = teacherPanel;
+    }
+
+    public TPanel[] getStudentPanels() {
+        return studentPanels;
+    }
+
+    public void setStudentPanels(TPanel[] studentPanels) {
+        this.studentPanels = studentPanels;
     }
 
     public void addStudent(Student student) {this.students.add(student); }

@@ -1,6 +1,6 @@
 package models;
 
-public class Person {
+public class Person extends Object {
 
     protected String name;
     protected String subject1;

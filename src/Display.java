@@ -3,10 +3,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-import models.Coordinate;
-import models.Person;
-import models.Student;
-import models.Teacher;
+import models.*;
 
 public class Display {
 
@@ -35,10 +32,19 @@ public class Display {
     public Teacher[] teachers = {new Teacher("Teacher 1"), new Teacher("Teacher 2"), new Teacher("Teacher 3")};
     public String sampleText = students[0].getName();
     public GridBagConstraints c;
+    public Lesson testLesson;
+
+    private MouseAdapter mouseAdapter = getHourMouseListener();
+
+    private int id = 1;
 
     public Display() {
         setScreenSizeVars();
         frame = createFrame();
+        TPanel teacherPanel = createTPanel(id);
+        TPanel[] studentPanels = {createTPanel(id), createTPanel(id), createTPanel(id)};
+        testLesson = new Lesson(teacherPanel, studentPanels);
+
     }
     public void show() {
         frame.getContentPane().removeAll();
@@ -46,11 +52,11 @@ public class Display {
 
         mainPanel = createMainPanel();
 
-        leftPanel = createSidePanel();
+        leftPanel = createSubPanel();
 
         // Add stuff to leftPanel here:
 
-            leftTopPanel = createSidePanel();
+            leftTopPanel = createSubPanel();
 
             // Add stuff to leftTopPanel here
             leftPanelText = new JLabel(sampleText);
@@ -63,11 +69,15 @@ public class Display {
             leftPanel.add(leftTopPanel, c);
 
 
-            leftBottomPanel = createSidePanel();
+            leftBottomPanel = createSubPanel();
 
             // Add stuff to leftBottomPanel
-                createPlanner(); // also adds the planner to the left bottom panel
+//                createPlanner(); // also adds the planner to the left bottom panel
 
+
+            generateLessonPanel(testLesson, new Coordinate(0, 0));
+            generateLessonPanel(testLesson, new Coordinate(1, 0));
+            generateLessonPanel(testLesson, new Coordinate(0, 1));
             // Customize and add leftBottomPanel to leftPanel
             c = customizeLeftBottomPanel();
             leftPanel.add(leftBottomPanel, c);
@@ -79,10 +89,11 @@ public class Display {
         c = customizeLeftPanel();
         mainPanel.add(leftPanel, c);
 
-        rightPanel = createSidePanel();
+        rightPanel = createSubPanel();
 
         // Add stuff to rightPanel here:
             createMenu(); // also adds the menu to the right panel
+
 
             applyButton = createButton("Apply", 150, 70);
             applyButton.addActionListener(e -> {
@@ -100,7 +111,7 @@ public class Display {
 
             teacherButton = createButton("Teachers", 100, 70);
             teacherButton.setBackground(Color.ORANGE);
-            teacherButton.addActionListener(e -> {showTeachers = true; Person person = (Person)menu.getSelectedItem(); sampleText = person.getName(); show();});
+            teacherButton.addActionListener(e -> {showTeachers = true; Person person = (Person)menu.getSelectedItem(); sampleText = person.getName(); rightPanel.revalidate(); rightPanel.repaint();});
             c = customizeTeacherButton();
             rightPanel.add(teacherButton, c);
 
@@ -113,6 +124,51 @@ public class Display {
         frame.add(mainPanel);
         displayFrame(frame);
 
+    }
+
+    private void generateLessonPanel(Lesson lesson, Coordinate coordinate) { // TODO
+
+        Coordinate[] subCoords = {
+                new Coordinate(0, 0),
+                new Coordinate(0, 1),
+                new Coordinate(0, 2)
+        };
+
+        JPanel panel = createSubPanel();
+
+        TPanel teacherPanel = createTPanel(id);
+
+        JLabel label = new JLabel(teacherPanel.getLabelText());
+        c = customizeTeacherLabel();
+        teacherPanel.add(label, c);
+        teacherPanel.setBackground(Color.RED);
+        teacherPanel.addMouseListener(mouseAdapter);
+        c = customizeTeacherPanel();
+        panel.add(teacherPanel, c);
+
+        JPanel studentPanel = createSubPanel();
+
+
+
+        for(int j = 0; j < 3; j++) {
+            TPanel panel1 = createTPanel(id);
+            JLabel label1 = new JLabel(panel1.getLabelText());
+            c = customizeTeacherLabel();
+            panel1.add(label1, c);
+            panel1.setBackground(Color.GREEN);
+            panel1.addMouseListener(mouseAdapter);
+            Coordinate subCoordinate = subCoords[j];
+            c = customizeSubStudentPanel(subCoordinate.getX(), subCoordinate.getY());
+            studentPanel.add(panel1, c);
+
+        }
+        c = customizeStudentPanel();
+        panel.add(studentPanel, c);
+
+
+
+        c = customizeHour(coordinate.getX(), coordinate.getY());
+        leftBottomPanel.add(panel, c);
     }
 
     private JButton createButton(String text, int width, int height) {
@@ -140,29 +196,36 @@ public class Display {
             public void mousePressed(MouseEvent e) {
 
                 System.out.println("Mouse Pressed");
-                JPanel panel = (JPanel) e.getSource();
+                TPanel panel = (TPanel) e.getSource();
                 setBackground(panel.getBackground());
                 panel.setBackground(Color.black);
+
                 panel.repaint();
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                JPanel panel = (JPanel) e.getSource();
+                TPanel panel = (TPanel) e.getSource();
+                System.out.println(panel.getId());
+                Person person = (Person) menu.getSelectedItem();
+                panel.setLabelText(person.getName());
                 panel.setBackground(background);
+                panel.revalidate();
                 panel.repaint();
+
                 System.out.println("Mouse Released");
 
             }
         };
     }
     private void createPlanner() {
-        hour1 = createSidePanel();
-        hour2 = createSidePanel();
-        hour3 = createSidePanel();
-        hour4 = createSidePanel();
-        hour5 = createSidePanel();
-        hour6 = createSidePanel();
+        setId(1);
+        hour1 = createSubPanel();
+        hour2 = createSubPanel();
+        hour3 = createSubPanel();
+        hour4 = createSubPanel();
+        hour5 = createSubPanel();
+        hour6 = createSubPanel();
         JPanel[] panels = {hour1, hour2, hour3, hour4, hour5, hour6};
         Coordinate[] coords = {
                 new Coordinate(0, 0),
@@ -183,9 +246,9 @@ public class Display {
         for(int i = 0; i < panels.length; i++ ) {
             JPanel panel = panels[i];
 
-            JPanel teacherPanel = createSidePanel();
+            TPanel teacherPanel = createTPanel(id);
 
-            JLabel label = new JLabel("test");
+            JLabel label = new JLabel(teacherPanel.getIdString());
             c = customizeTeacherLabel();
             teacherPanel.add(label, c);
             teacherPanel.setBackground(Color.RED);
@@ -193,13 +256,13 @@ public class Display {
             c = customizeTeacherPanel();
             panel.add(teacherPanel, c);
 
-            JPanel studentPanel = createSidePanel();
+            JPanel studentPanel = createSubPanel();
 
 
 
             for(int j = 0; j < 3; j++) {
-                JPanel panel1 = createSidePanel();
-                JLabel label1 = new JLabel("test");
+                TPanel panel1 = createTPanel(id);
+                JLabel label1 = new JLabel(panel1.getIdString());
                 c = customizeTeacherLabel();
                 panel1.add(label1, c);
                 panel1.setBackground(Color.GREEN);
@@ -225,7 +288,6 @@ public class Display {
 
         return c;
     }
-
     private GridBagConstraints customizeTeacherPanel() {
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.BOTH;
@@ -237,7 +299,6 @@ public class Display {
         c.gridheight = 3;
         return c;
     }
-
     private GridBagConstraints customizeStudentPanel() {
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.BOTH;
@@ -249,7 +310,6 @@ public class Display {
         c.gridheight = 3;
         return c;
     }
-
     private GridBagConstraints customizeSubStudentPanel(int x, int y) {
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.BOTH;
@@ -261,7 +321,6 @@ public class Display {
         c.gridheight = 1;
         return c;
     }
-
     private GridBagConstraints customizeLeftTopPanel(){
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.BOTH;
@@ -273,7 +332,6 @@ public class Display {
         c.gridheight = 1;
         return c;
     }
-
     private GridBagConstraints customizeLeftBottomPanel(){
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.BOTH;
@@ -285,7 +343,6 @@ public class Display {
         c.gridheight = 2;
         return c;
     }
-
     private GridBagConstraints customizeHour(int gridx, int gridy) {
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.BOTH;
@@ -308,7 +365,6 @@ public class Display {
         c.gridheight = 1;
         return c;
     }
-
     private GridBagConstraints customizeTeacherButton() {
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.HORIZONTAL;
@@ -320,8 +376,6 @@ public class Display {
         c.gridheight = 1;
         return c;
     }
-
-
     private GridBagConstraints customizeApplyButton() {
         GridBagConstraints c = new GridBagConstraints();
         c.weightx = 0.3;
@@ -378,7 +432,16 @@ public class Display {
         return panel;
     }
 
-    private JPanel createSidePanel() {
+    private TPanel createTPanel(int id) {
+        JLabel label = new JLabel("empty");
+        TPanel panel = new TPanel(id, label);
+        setId(getId() + 1);
+        panel.setLayout(new GridBagLayout());
+        panel.setBorder(BorderFactory.createLineBorder(Color.black));
+        return panel;
+    }
+
+    private JPanel createSubPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(BorderFactory.createLineBorder(Color.black));
         return panel;
@@ -414,5 +477,13 @@ public class Display {
         Dimension screenSize = tk.getScreenSize();
         screenWidth = screenSize.width;
         screenHeight = screenSize.height - 40;
+    }
+
+    private int getId() {
+        return this.id;
+    }
+
+    private void setId(int id) {
+        this.id = id;
     }
 }
